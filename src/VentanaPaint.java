@@ -4,7 +4,9 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 
 
@@ -14,17 +16,36 @@ import java.awt.image.BufferedImage;
  * 
  */
 public class VentanaPaint extends javax.swing.JFrame {
+/**
+     * Creates new form VentanaPaint
+     */
+    //formas que podemos hacer
+    private Line2D.Double linea = new Line2D.Double();
+    private Ellipse2D.Double circulo = new Ellipse2D.Double();
+    private Rectangle2D.Double cuadrado = new Rectangle2D.Double();
 
-    //creamos una variable de tipo linea
-    // para guardar la línea que dibuja el usuario
-    Line2D.Double linea = new Line2D.Double();
+    //en una variable de tipo BufferedImage puedo almacenar una imagen.
+    private BufferedImage buffer;
     
-    //en una variable de tipo BufferedImage puedo
-    //almacenar una imagen
-    private BufferedImage buffer = null;
+     private int x1;
+    private int x2;
+    private int y1;
+    private int y2;
+    private int alto;
+    private int ancho;
+    private double xOrigen;
+    private double yOrigen;
     
     //almacena el color seleccionado
     Color colorSeleccionado = Color.black;
+      int seleccionCursor = 0;
+    int opcionForma = 0;
+    String estados = "";
+    int numeroLinea = 0;
+    private Graphics2D g4;
+    private Graphics2D g2;
+    
+     int Grosor = 3;
     
 
     public VentanaPaint() {
@@ -70,10 +91,10 @@ public class VentanaPaint extends javax.swing.JFrame {
         jButton4 = new javax.swing.JButton();
         jButton5 = new javax.swing.JButton();
         jPanel1 = new javax.swing.JPanel();
-        jButton1 = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
         jButton3 = new javax.swing.JButton();
         jSlider1 = new javax.swing.JSlider();
+        Tipo = new javax.swing.JComboBox();
+        jLabel1 = new javax.swing.JLabel();
 
         jButton4.setText("Aceptar");
         jButton4.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -115,6 +136,8 @@ public class VentanaPaint extends javax.swing.JFrame {
         );
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setBackground(new java.awt.Color(102, 255, 255));
+        setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
 
         jPanel1.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
             public void mouseDragged(java.awt.event.MouseEvent evt) {
@@ -141,17 +164,6 @@ public class VentanaPaint extends javax.swing.JFrame {
             .addGap(0, 0, Short.MAX_VALUE)
         );
 
-        jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/HiggsProp_opt.png"))); // NOI18N
-        jButton1.setText("Discontinua");
-        jButton1.setOpaque(false);
-
-        jButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/flat-line-diagonal-theme-action-icon_opt.png"))); // NOI18N
-        jButton2.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mousePressed(java.awt.event.MouseEvent evt) {
-                jButton2MousePressed(evt);
-            }
-        });
-
         jButton3.setBackground(new java.awt.Color(153, 204, 0));
         jButton3.setFont(new java.awt.Font("Tekton Pro Cond", 0, 18)); // NOI18N
         jButton3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/color-picker-icon_final_opt.jpg"))); // NOI18N
@@ -169,6 +181,18 @@ public class VentanaPaint extends javax.swing.JFrame {
             }
         });
 
+        Tipo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Lisa", "Punteada", "Rayada", "Mixta" }));
+        Tipo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                TipoActionPerformed(evt);
+            }
+        });
+
+        jLabel1.setBackground(new java.awt.Color(255, 51, 51));
+        jLabel1.setFont(new java.awt.Font("Tempus Sans ITC", 0, 12)); // NOI18N
+        jLabel1.setText("Tipos");
+        jLabel1.setOpaque(true);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -176,18 +200,13 @@ public class VentanaPaint extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 72, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(10, 10, 10)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jSlider1, javax.swing.GroupLayout.PREFERRED_SIZE, 109, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jButton3))))
-                .addContainerGap(69, Short.MAX_VALUE))
+                .addGap(28, 28, 28)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addComponent(Tipo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jSlider1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                    .addComponent(jButton3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(79, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -195,15 +214,15 @@ public class VentanaPaint extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(16, 16, 16)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jButton2)
-                            .addComponent(jButton1))
+                        .addGap(6, 6, 6)
+                        .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(Tipo, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
                         .addComponent(jSlider1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 466, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 418, Short.MAX_VALUE))
                     .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
@@ -234,11 +253,24 @@ public class VentanaPaint extends javax.swing.JFrame {
         linea.x2 = evt.getX();
         linea.y2 = evt.getY();
                 
-        //pinto la linea en el jPanel
-        float dash[] = {10.0f};
-        g2.setStroke(new BasicStroke(3.0f, BasicStroke.CAP_BUTT,BasicStroke.JOIN_MITER, 10.0f,dash , 0.0f));
-        g2.setColor(colorSeleccionado);
-        g2.draw(linea);
+        
+        
+       String stringLinea = (Tipo.getSelectedItem().toString());
+        if (stringLinea.equals("Liso")){
+         g2.setStroke(new BasicStroke(jSlider1.getValue()));
+        }
+        if(stringLinea.equals("Mixta")){
+            float dash[] = {21.0f,9.0f,3.0f,9.0f};
+        g2.setStroke(new BasicStroke(jSlider1.getValue(),BasicStroke.CAP_BUTT,BasicStroke.JOIN_MITER,10.0f, dash,0.0f));
+        }
+        if(stringLinea.equals("Punteada")){
+            float dash[] = {5.0f,5.0f};
+        g2.setStroke(new BasicStroke(jSlider1.getValue(),BasicStroke.CAP_BUTT,BasicStroke.JOIN_MITER,10.0f, dash,0.0f));
+        }
+        if(stringLinea.equals("Rayada")){
+            float dash[] = {21.0f,9.0f};
+        g2.setStroke(new BasicStroke(jSlider1.getValue(),BasicStroke.CAP_BUTT,BasicStroke.JOIN_MITER,10.0f, dash,0.0f));
+        }
     }//GEN-LAST:event_jPanel1MouseDragged
 
     private void jPanel1MouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jPanel1MouseReleased
@@ -271,13 +303,13 @@ public class VentanaPaint extends javax.swing.JFrame {
         jDialog1.setVisible(false);
     }//GEN-LAST:event_jButton5MousePressed
 
-    private void jButton2MousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jButton2MousePressed
-        
-    }//GEN-LAST:event_jButton2MousePressed
-
     private void jSlider1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jSlider1MouseClicked
        
     }//GEN-LAST:event_jSlider1MouseClicked
+
+    private void TipoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TipoActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_TipoActionPerformed
 
     /**
      * @param args the command line arguments
@@ -315,13 +347,13 @@ public class VentanaPaint extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
+    private javax.swing.JComboBox Tipo;
     private javax.swing.JButton jButton3;
     private javax.swing.JButton jButton4;
     private javax.swing.JButton jButton5;
     private javax.swing.JColorChooser jColorChooser1;
     private javax.swing.JDialog jDialog1;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JSlider jSlider1;
     // End of variables declaration//GEN-END:variables
